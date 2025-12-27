@@ -5,10 +5,12 @@ import model.Kostum;
 import worker.ProdukLoadWorker;
 import java.awt.*;
 import java.awt.event.*;
+import java.net.URI;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.table.*;
 import net.miginfocom.swing.MigLayout;
+import socket.RealtimeSocket;
 
 public class PanelProduk extends JPanel {
 
@@ -19,16 +21,30 @@ public class PanelProduk extends JPanel {
     private final ProdukController controller = new ProdukController();
 
     public PanelProduk() {
-        initializeUI();
-        refresh(); // load awal
+    initializeUI();
+    refresh(); // load awal
 
-        addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e) {
-                applyResponsiveTable();
-            }
-        });
+    // ===============================
+    // 🔔 REALTIME LISTENER (TAMBAHAN)
+    // ===============================
+    try {
+        RealtimeSocket socket = new RealtimeSocket(
+            new URI("ws://localhost:8081"),
+            () -> SwingUtilities.invokeLater(this::refresh)
+        );
+        socket.connect();
+    } catch (Exception e) {
+        e.printStackTrace();
     }
+
+    addComponentListener(new ComponentAdapter() {
+        @Override
+        public void componentResized(ComponentEvent e) {
+            applyResponsiveTable();
+        }
+    });
+}
+
 
     private void initializeUI() {
         mainLayout = new MigLayout("fill, insets 30", "[grow]", "[]20[]20[grow]");

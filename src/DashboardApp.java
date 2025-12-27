@@ -1,25 +1,42 @@
-import view.FrameUtama; // WAJIB: Agar Java tahu FrameUtama ada di package 'view'
+import view.FrameUtama; // WAJIB
 import javax.swing.SwingUtilities;
+import socket.RealtimeSocket;
+
+import java.net.URI;
 
 public class DashboardApp {
+
+    // simpan socket sebagai global (opsional, tapi rapi)
+    public static RealtimeSocket socket;
+
     public static void main(String[] args) {
-        // 1. Setup LookAndFeel (Tema) agar modern seperti di FrameUtama kamu
+
+        // 0️⃣ CONNECT WEBSOCKET (AMAN, BUKAN DI EDT)
+        try {
+            socket = new RealtimeSocket(
+                new URI("ws://localhost:3000")
+            );
+            socket.connect(); // async, tidak blocking
+        } catch (Exception e) {
+            System.err.println("Gagal koneksi WebSocket");
+            e.printStackTrace();
+        }
+
+        // 1️⃣ Setup LookAndFeel (TETAP)
         try {
             com.formdev.flatlaf.FlatLightLaf.setup();
         } catch (Exception e) {
             System.err.println("Gagal memuat tema modern, menggunakan tema standar.");
         }
 
-        // 2. Jalankan UI di Event Dispatch Thread (EDT)
+        // 2️⃣ Jalankan UI di EDT (TETAP, TIDAK DIUBAH)
         SwingUtilities.invokeLater(() -> {
             try {
                 FrameUtama frame = new FrameUtama();
-                
-                // Opsional: Karena di FrameUtama kamu belum ada pack(), tambahkan di sini
-                frame.pack(); 
-                frame.setLocationRelativeTo(null); // Muncul di tengah layar
+                frame.pack();
+                frame.setLocationRelativeTo(null);
                 frame.setVisible(true);
-                
+
                 System.out.println("Aplikasi Client-Tier Berhasil Dijalankan!");
             } catch (Exception e) {
                 e.printStackTrace();
